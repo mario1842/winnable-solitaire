@@ -1,0 +1,78 @@
+:root {
+  --bg-deep: #1a1410;
+  --bg-mid: #2a2118;
+  --bg-glow: #3d2e1f;
+  --wood: #5c4030;
+  --jade: #3d7a6a;
+  --jade-bright: #5a9e8a;
+  --jade-glow: rgba(90, 158, 138, 0.45);
+  --ivory: #f3ebe0;
+  --ivory-dim: #d4c4b0;
+  --ink: #1c1410;
+  --gold: #c4a35a;
+  --felt: #2f5c4a;
+  --felt-deep: #244a3c;
+  --card-face: #f7f0e4;
+  --card-edge: #c9b8a0;
+  --card-red: #a83028;
+  --card-black: #1c1410;
+  --card-hearts: var(--card-red);
+  --card-diamonds: var(--card-red);
+  --card-clubs: var(--card-black);
+  --card-spades: var(--card-black);
+  --font-display: 'Cormorant Garamond', Georgia, serif;
+  --font-ui: 'Sora', system-ui, sans-serif;
+  --radius: 10px;
+  --card-w: 108px;
+  --card-h: 150px;
+  /* Tight peeks so tall columns stay on screen */
+  --stack-up: 32px;
+  --stack-down: 14px;
+  --waste-fan: 27px;
+}
+
+/* Balatro-style high contrast: ♥ red, ♦ orange, ♣ blue, ♠ black */
+html.high-contrast {
+  --card-hearts: #e8352e;
+  --card-diamonds: #f0a12f;
+  --card-clubs: #3d7dd6;
+  --card-spades: #1c1410;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  font-family: var(--font-ui);
+  color: var(--ivory);
+  background:
+    radial-gradient(ellipse 90% 60% at 50% -10%, var(--bg-glow), transparent 55%),
+    radial-gradient(ellipse 50% 40% at 80% 90%, rgba(61, 122, 106, 0.18), transparent 50%),
+    linear-gradient(165deg, var(--bg-deep) 0%, var(--bg-mid) 45%, #1f1812 100%);
+  background-attachment: fixed;
+  -webkit-font-smoothing: antialiased;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+button:disabled:not(.card) {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+#root {
+  min-height: 100dvh;
+}
