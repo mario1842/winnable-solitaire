@@ -51,24 +51,30 @@ interface DragSession {
 
 const DRAG_THRESHOLD = 6
 
-function cssPx(name: string, fallback: number): number {
-  const raw = getComputedStyle(document.documentElement).getPropertyValue(name)
+function cssPx(name: string, fallback: number, root?: Element | null): number {
+  const raw = getComputedStyle(root ?? document.documentElement).getPropertyValue(name)
   return Number.parseFloat(raw) || fallback
 }
 
-function stackGap(faceUp: boolean): number {
-  return faceUp ? cssPx('--stack-up', 32) : cssPx('--stack-down', 14)
+function stackGap(faceUp: boolean, root?: Element | null): number {
+  return faceUp
+    ? cssPx('--stack-up', 32, root)
+    : cssPx('--stack-down', 14, root)
 }
 
-function wasteFan(): number {
-  return cssPx('--waste-fan', 27)
+function wasteFan(root?: Element | null): number {
+  return cssPx('--waste-fan', 27, root)
 }
 
 /** Cumulative Y offset — each card peeks by the gap of the card above it. */
-function stackOffset(column: readonly Card[], index: number): number {
+function stackOffset(
+  column: readonly Card[],
+  index: number,
+  root?: Element | null,
+): number {
   let top = 0
   for (let i = 0; i < index; i++) {
-    top += stackGap(column[i]!.faceUp)
+    top += stackGap(column[i]!.faceUp, root)
   }
   return top
 }
@@ -89,16 +95,43 @@ export function Board({
   const [drag, setDrag] = useState<DragSession | null>(null)
   const dragRef = useRef<DragSession | null>(null)
   const boardRef = useRef<HTMLDivElement>(null)
-  // Re-read CSS card metrics after orientation / viewport changes
+  const wrapRef = useRef<HTMLDivElement>(null)
+  // Force re-render when measured card metrics change (phone rotate / resize)
   const [, setLayoutTick] = useState(0)
+
   useEffect(() => {
-    const refresh = () => setLayoutTick((n) => n + 1)
-    window.addEventListener('resize', refresh)
-    window.addEventListener('orientationchange', refresh)
-    return () => {
-      window.removeEventListener('resize', refresh)
-      window.removeEventListener('orientationchange', refresh)
+    const board = boardRef.current
+    const wrap = wrapRef.current
+    if (!board || !wrap) return
+
+    const applyMetrics = () => {
+      const col = board.querySelector('.tableau-col') as HTMLElement | null
+      const width = col?.getBoundingClientRect().width
+      if (!width || width < 8) return
+      // Phones: fill the column. Desktop: cap size so columns keep breathing room.
+      const compact = window.matchMedia('(max-width: 900px)').matches
+      const cardW = Math.round(Math.min(width, compact ? width : 112) * 10) / 10
+      const next = `${cardW}px`
+      if (wrap.style.getPropertyValue('--card-w') === next) return
+      const cardH = Math.round(cardW * 1.39 * 10) / 10
+      const vars: Record<string, string> = {
+        '--card-w': next,
+        '--card-h': `${cardH}px`,
+        '--stack-up': `${Math.max(12, Math.round(cardW * (compact ? 0.28 : 0.3)))}px`,
+        '--stack-down': `${Math.max(6, Math.round(cardW * (compact ? 0.12 : 0.13)))}px`,
+        '--waste-fan': `${Math.max(8, Math.round(cardW * (compact ? 0.22 : 0.25)))}px`,
+      }
+      for (const [key, value] of Object.entries(vars)) {
+        wrap.style.setProperty(key, value)
+        board.style.setProperty(key, value)
+      }
+      setLayoutTick((n) => n + 1)
     }
+
+    applyMetrics()
+    const ro = new ResizeObserver(applyMetrics)
+    ro.observe(board)
+    return () => ro.disconnect()
   }, [])
 
   const setDragBoth = useCallback((next: DragSession | null) => {
@@ -205,11 +238,16 @@ export function Board({
     return false
   }
 
+  const metricsRoot = boardRef.current
+
   return (
-    <div className={`board-wrap${inputLocked ? ' input-locked' : ''}`}>
+    <div
+      className={`board-wrap${inputLocked ? ' input-locked' : ''}`}
+      ref={wrapRef}
+    >
       <div className={`board${drag?.active ? ' is-dragging' : ''}`} ref={boardRef}>
-        <div className="board-top">
-          <div className={`stock-waste${shuffling ? ' is-shuffling' : ''}`}>
+        <div className={`board-top${shuffling ? ' is-shuffling' : ''}`}>
+          <div className="top-slot stock-slot">
             {board.stock.length > 0 || shuffling ? (
               <button
                 type="button"
@@ -228,81 +266,88 @@ export function Board({
                 onClick={onDrawStock}
               />
             )}
-
-            <div className={`waste${shuffling ? ' shuffling' : ''}`} data-drop-zone="waste">
-              {board.waste.length === 0 ? (
-                <EmptySlot label="" />
-              ) : (
-                board.waste.slice(-Math.min(3, board.waste.length)).map((card, i, arr) => {
-                  const absIndex = board.waste.length - arr.length + i
-                  const isTop = absIndex === wasteTop
-                  const ref: PileRef = { type: 'waste' }
-                  return (
-                    <div
-                      key={`${card.id}-${absIndex}`}
-                      className="waste-card"
-                      data-card-id={isTop ? card.id : undefined}
-                      style={{
-                        left: i * wasteFan(),
-                        animationDelay: shuffling ? `${(arr.length - 1 - i) * 45}ms` : undefined,
-                      }}
-                    >
-                      <CardView
-                        card={card}
-                        hinted={isTop && isHintCard(state, ref)}
-                        dimmed={
-                          (isTop && isDraggedCard(ref)) ||
-                          (!!fly && fly.card.id === card.id)
-                        }
-                        anim={
-                          isTop && animDrawIds.has(card.id)
-                            ? 'draw'
-                            : animPlaceIds.has(card.id)
-                              ? 'place'
-                              : null
-                        }
-                        draggable={isTop && !inputLocked}
-                        onPointerDown={
-                          isTop && !inputLocked
-                            ? (e) => beginDrag(ref, e)
-                            : undefined
-                        }
-                        onDoubleClick={
-                          isTop && !inputLocked
-                            ? () => onAutoFoundation(ref)
-                            : undefined
-                        }
-                      />
-                    </div>
-                  )
-                })
-              )}
-            </div>
           </div>
 
-          <div className="foundations">
-            {SUITS.map((suit, index) => {
-              const pile = board.foundations[index]
-              const top = pile[pile.length - 1]
-              const dropId = `foundation:${index}`
-              const active =
-                !!dropHighlight &&
-                sourceCanDropOnFoundation(board, dropHighlight, index)
-              if (!top) {
+          <div
+            className={`top-slot waste${shuffling ? ' shuffling' : ''}`}
+            data-drop-zone="waste"
+          >
+            {board.waste.length === 0 ? (
+              <EmptySlot label="" />
+            ) : (
+              board.waste.slice(-Math.min(3, board.waste.length)).map((card, i, arr) => {
+                const absIndex = board.waste.length - arr.length + i
+                const isTop = absIndex === wasteTop
+                const ref: PileRef = { type: 'waste' }
                 return (
+                  <div
+                    key={`${card.id}-${absIndex}`}
+                    className="waste-card"
+                    data-card-id={isTop ? card.id : undefined}
+                    style={{
+                      left: i * wasteFan(metricsRoot),
+                      animationDelay: shuffling
+                        ? `${(arr.length - 1 - i) * 45}ms`
+                        : undefined,
+                    }}
+                  >
+                    <CardView
+                      card={card}
+                      hinted={isTop && isHintCard(state, ref)}
+                      dimmed={
+                        (isTop && isDraggedCard(ref)) ||
+                        (!!fly && fly.card.id === card.id)
+                      }
+                      anim={
+                        isTop && animDrawIds.has(card.id)
+                          ? 'draw'
+                          : animPlaceIds.has(card.id)
+                            ? 'place'
+                            : null
+                      }
+                      draggable={isTop && !inputLocked}
+                      onPointerDown={
+                        isTop && !inputLocked
+                          ? (e) => beginDrag(ref, e)
+                          : undefined
+                      }
+                      onDoubleClick={
+                        isTop && !inputLocked
+                          ? () => onAutoFoundation(ref)
+                          : undefined
+                      }
+                    />
+                  </div>
+                )
+              })
+            )}
+          </div>
+
+          <div className="top-slot top-spacer" aria-hidden="true" />
+
+          {SUITS.map((suit, index) => {
+            const pile = board.foundations[index]
+            const top = pile[pile.length - 1]
+            const dropId = `foundation:${index}`
+            const active =
+              !!dropHighlight &&
+              sourceCanDropOnFoundation(board, dropHighlight, index)
+            if (!top) {
+              return (
+                <div key={suit} className="top-slot foundation-slot">
                   <EmptySlot
-                    key={suit}
                     label={suitGlyph(suit)}
                     active={active}
                     dropId={dropId}
                     suitClass={`suit-${suit}`}
                   />
-                )
-              }
-              const ref: PileRef = { type: 'foundation', index }
-              return (
+                </div>
+              )
+            }
+            const ref: PileRef = { type: 'foundation', index }
+            return (
+              <div key={suit} className="top-slot foundation-slot">
                 <div
-                  key={suit}
                   data-drop={dropId}
                   data-card-id={top.id}
                   className={active ? 'drop-wrap active' : 'drop-wrap'}
@@ -318,9 +363,9 @@ export function Board({
                     }
                   />
                 </div>
-              )
-            })}
-          </div>
+              </div>
+            )
+          })}
         </div>
 
         <div className="tableau">
@@ -339,7 +384,7 @@ export function Board({
                 ) : (
                   column.map((card, index) => {
                     const ref: PileRef = { type: 'tableau', col, index }
-                    const top = stackOffset(column, index)
+                    const top = stackOffset(column, index, metricsRoot)
                     return (
                       <div
                         key={card.id}
@@ -396,7 +441,7 @@ export function Board({
             <div
               key={card.id}
               className="drag-ghost-card"
-              style={{ top: i * stackGap(true) }}
+              style={{ top: i * stackGap(true, metricsRoot) }}
             >
               <CardView card={card} stacked dragging />
             </div>

@@ -24,8 +24,8 @@
   --font-ui: 'Sora', system-ui, sans-serif;
   --radius: 10px;
   --card-ratio: 1.39;
-  --board-gap: 0.45rem;
-  --card-w: 108px;
+  --board-gap: 0.75rem;
+  --card-w: 112px;
   --card-h: calc(var(--card-w) * var(--card-ratio));
   /* Tight peeks so tall columns stay on screen */
   --stack-up: calc(var(--card-w) * 0.3);
