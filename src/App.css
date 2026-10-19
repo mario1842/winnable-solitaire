@@ -277,10 +277,14 @@ a.sister-btn {
   align-items: center;
   gap: 0.75rem 1rem;
   padding: 0.85rem 1.1rem;
+  padding-top: max(0.55rem, env(safe-area-inset-top));
+  padding-left: max(0.65rem, env(safe-area-inset-left));
+  padding-right: max(0.65rem, env(safe-area-inset-right));
   background: rgba(20, 12, 8, 0.92);
   border-bottom: 1px solid rgba(212, 196, 176, 0.12);
   backdrop-filter: blur(8px);
   z-index: 20;
+  flex-shrink: 0;
 }
 
 .hud-stats {
@@ -379,9 +383,11 @@ a.sister-btn {
   min-height: 0;
   display: flex;
   justify-content: center;
-  padding: 1rem 1rem 1.5rem;
+  align-items: stretch;
+  padding: 0.75rem 0.75rem max(0.75rem, env(safe-area-inset-bottom));
   overflow: auto;
   position: relative;
+  -webkit-overflow-scrolling: touch;
 }
 
 .board {
@@ -407,21 +413,24 @@ a.sister-btn {
 .board-top {
   display: flex;
   justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  flex-wrap: nowrap;
 }
 
 .stock-waste {
   display: flex;
-  gap: 0.75rem;
+  gap: 0.45rem;
   align-items: flex-start;
+  flex-shrink: 0;
 }
 
 .waste {
   position: relative;
-  width: calc(var(--card-w) + 54px);
+  width: calc(var(--card-w) + 2 * var(--waste-fan));
   height: var(--card-h);
+  flex-shrink: 0;
 }
 
 .waste-card {
@@ -431,21 +440,24 @@ a.sister-btn {
 
 .foundations {
   display: flex;
-  gap: 0.55rem;
-  flex-wrap: wrap;
+  gap: var(--board-gap);
+  flex-wrap: nowrap;
   justify-content: flex-end;
+  flex-shrink: 0;
 }
 
 .tableau {
   display: grid;
-  grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 0.45rem;
+  grid-template-columns: repeat(7, var(--card-w));
+  gap: var(--board-gap);
+  justify-content: space-between;
   align-items: start;
-  min-height: 420px;
+  min-height: calc(var(--card-h) + 8 * var(--stack-up));
 }
 
 .tableau-col {
   position: relative;
+  width: var(--card-w);
   min-height: calc(var(--card-h) + 7 * var(--stack-down));
   align-self: start;
   border-radius: 10px;
@@ -464,9 +476,8 @@ a.sister-btn {
 }
 
 .tableau-card .card {
-  width: 100%;
-  max-width: var(--card-w);
-  margin: 0 auto;
+  width: var(--card-w);
+  margin: 0;
 }
 
 .drop-wrap {
@@ -591,7 +602,7 @@ a.sister-btn {
 
 .slot-label {
   font-family: var(--font-display);
-  font-size: 2.2rem;
+  font-size: clamp(1rem, calc(var(--card-w) * 0.38), 2.2rem);
 }
 
 .corner {
@@ -604,23 +615,23 @@ a.sister-btn {
 }
 
 .corner.top {
-  top: 8px;
-  left: 9px;
+  top: max(3px, calc(var(--card-w) * 0.06));
+  left: max(3px, calc(var(--card-w) * 0.07));
 }
 
 .corner.bottom {
-  bottom: 8px;
-  right: 9px;
+  bottom: max(3px, calc(var(--card-w) * 0.06));
+  right: max(3px, calc(var(--card-w) * 0.07));
   transform: rotate(180deg);
 }
 
 .corner .rank {
   font-family: var(--font-display);
-  font-size: 1.35rem;
+  font-size: clamp(0.7rem, calc(var(--card-w) * 0.22), 1.35rem);
 }
 
 .corner .suit {
-  font-size: 1.1rem;
+  font-size: clamp(0.55rem, calc(var(--card-w) * 0.18), 1.1rem);
 }
 
 .pip-center {
@@ -628,7 +639,7 @@ a.sister-btn {
   inset: 0;
   display: grid;
   place-items: center;
-  font-size: 2.85rem;
+  font-size: clamp(1.1rem, calc(var(--card-w) * 0.42), 2.85rem);
   opacity: 0.92;
 }
 
@@ -897,106 +908,132 @@ a.sister-btn {
   }
 }
 
-@media (max-width: 1100px) {
+@media (max-width: 900px) {
   :root {
-    --card-w: 84px;
-    --card-h: 116px;
-    --stack-up: 28px;
-    --stack-down: 12px;
-    --waste-fan: 22px;
+    --board-gap: 0.2rem;
+    /* Fill phone width: 7 columns + pads, keep desktop max at larger breakpoints */
+    --card-w: clamp(
+      40px,
+      calc((100vw - 1.6rem - 6 * var(--board-gap)) / 7),
+      96px
+    );
+    --card-h: calc(var(--card-w) * var(--card-ratio));
+    --stack-up: clamp(12px, calc(var(--card-w) * 0.3), 28px);
+    --stack-down: clamp(6px, calc(var(--card-w) * 0.125), 12px);
+    --waste-fan: clamp(8px, calc(var(--card-w) * 0.24), 22px);
+  }
+
+  .board-wrap {
+    padding: 0.35rem 0.3rem max(0.4rem, env(safe-area-inset-bottom));
   }
 
   .board {
-    width: min(1100px, 100%);
+    width: 100%;
+    padding: 0.55rem 0.35rem 0.75rem;
+    border-radius: 10px;
   }
 
-  .pip-center {
-    font-size: 2.2rem;
+  .board-top {
+    margin-bottom: 0.65rem;
+    gap: 0.35rem;
   }
 
-  .corner .rank {
-    font-size: 1.1rem;
-  }
-
-  .corner .suit {
-    font-size: 0.95rem;
-  }
-}
-
-@media (max-width: 800px) {
-  :root {
-    --card-w: 64px;
-    --card-h: 90px;
-    --stack-up: 24px;
-    --stack-down: 11px;
-    --waste-fan: 18px;
-  }
-
-  .pip-center {
-    font-size: 1.65rem;
-  }
-
-  .corner .rank {
-    font-size: 0.95rem;
-  }
-
-  .slot-label {
-    font-size: 1.6rem;
-  }
-}
-
-@media (max-width: 560px) {
-  :root {
-    --card-w: 48px;
-    --card-h: 68px;
-    --stack-up: 20px;
-    --stack-down: 10px;
-    --waste-fan: 14px;
-  }
-
-  .board {
-    padding: 0.75rem 0.45rem 1rem;
-  }
-
-  .tableau {
-    gap: 0.25rem;
-    min-height: 320px;
-  }
-
-  .pip-center {
-    font-size: 1.25rem;
-  }
-
-  .corner {
-    display: none;
+  .stock-waste {
+    gap: 0.28rem;
   }
 
   .hud {
-    grid-template-columns: 1fr;
-    justify-items: center;
-    padding: 0.55rem 0.65rem;
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      'stats sisters'
+      'actions actions';
+    gap: 0.35rem 0.5rem;
+    padding: 0.4rem 0.5rem;
+    padding-top: max(0.35rem, env(safe-area-inset-top));
   }
 
-  .hud-stats,
+  .hud-stats {
+    grid-area: stats;
+    gap: 0.45rem 0.75rem;
+  }
+
+  .hud .sister-games {
+    grid-area: sisters;
+    justify-self: end;
+  }
+
   .hud-actions {
-    justify-self: center;
-    justify-content: center;
+    grid-area: actions;
+    justify-self: stretch;
+    justify-content: stretch;
+    flex-wrap: nowrap;
+    gap: 0.3rem;
+  }
+
+  .hud-actions .btn {
+    flex: 1 1 0;
+    padding: 0.42rem 0.2rem;
+    font-size: 0.72rem;
+    white-space: nowrap;
+  }
+
+  .stat label {
+    font-size: 0.55rem;
   }
 
   .stat strong {
-    font-size: 1rem;
-  }
-
-  .btn {
-    padding: 0.45rem 0.65rem;
-    font-size: 0.78rem;
+    font-size: 0.95rem;
   }
 
   .key {
     display: none;
   }
 
-  .waste {
-    width: calc(var(--card-w) + 28px);
+  /* Keep top rank readable in tall stacks; bottom is noise on small cards */
+  .corner.bottom {
+    display: none;
+  }
+
+  .card-back::after {
+    inset: 4px;
+  }
+}
+
+@media (max-width: 420px) {
+  :root {
+    --board-gap: 0.12rem;
+    --card-w: clamp(
+      38px,
+      calc((100vw - 1.25rem - 6 * var(--board-gap)) / 7),
+      72px
+    );
+  }
+
+  .hud-stats .stat:nth-child(1),
+  .hud-stats .stat:nth-child(4) {
+    display: none;
+  }
+
+  .contrast-label {
+    display: none;
+  }
+}
+
+@media (max-height: 520px) and (orientation: landscape) {
+  :root {
+    --stack-up: clamp(10px, calc(var(--card-w) * 0.22), 22px);
+    --stack-down: clamp(5px, calc(var(--card-w) * 0.1), 10px);
+  }
+
+  .hud {
+    padding: 0.25rem 0.45rem;
+  }
+
+  .board {
+    padding: 0.35rem 0.4rem 0.5rem;
+  }
+
+  .board-top {
+    margin-bottom: 0.4rem;
   }
 }

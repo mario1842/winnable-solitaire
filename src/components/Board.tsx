@@ -89,6 +89,17 @@ export function Board({
   const [drag, setDrag] = useState<DragSession | null>(null)
   const dragRef = useRef<DragSession | null>(null)
   const boardRef = useRef<HTMLDivElement>(null)
+  // Re-read CSS card metrics after orientation / viewport changes
+  const [, setLayoutTick] = useState(0)
+  useEffect(() => {
+    const refresh = () => setLayoutTick((n) => n + 1)
+    window.addEventListener('resize', refresh)
+    window.addEventListener('orientationchange', refresh)
+    return () => {
+      window.removeEventListener('resize', refresh)
+      window.removeEventListener('orientationchange', refresh)
+    }
+  }, [])
 
   const setDragBoth = useCallback((next: DragSession | null) => {
     dragRef.current = next

@@ -23,12 +23,14 @@
   --font-display: 'Cormorant Garamond', Georgia, serif;
   --font-ui: 'Sora', system-ui, sans-serif;
   --radius: 10px;
+  --card-ratio: 1.39;
+  --board-gap: 0.45rem;
   --card-w: 108px;
-  --card-h: 150px;
+  --card-h: calc(var(--card-w) * var(--card-ratio));
   /* Tight peeks so tall columns stay on screen */
-  --stack-up: 32px;
-  --stack-down: 14px;
-  --waste-fan: 27px;
+  --stack-up: calc(var(--card-w) * 0.3);
+  --stack-down: calc(var(--card-w) * 0.13);
+  --waste-fan: calc(var(--card-w) * 0.25);
 }
 
 /* Balatro-style high contrast: ♥ red, ♦ orange, ♣ blue, ♠ black */
