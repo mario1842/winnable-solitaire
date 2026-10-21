@@ -4,7 +4,7 @@ Klondike Solitaire in the browser where **every deal is guaranteed solvable**. D
 
 **Play online:** [https://mario1842.github.io/winnable-solitaire/](https://mario1842.github.io/winnable-solitaire/)  
 **Repository:** [https://github.com/mario1842/winnable-solitaire](https://github.com/mario1842/winnable-solitaire)  
-Companion to [Winnable Mahjong](https://mario1842.github.io/winnable-mahjong/).
+Companion to [Winnable Mahjong](https://mario1842.github.io/winnable-mahjong/) and [Winnable Minesweeper](https://mario1842.github.io/winnable-minesweeper/).
 
 ## Play locally
 

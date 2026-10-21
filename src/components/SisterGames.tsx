@@ -1,4 +1,5 @@
 import { MahjongIcon } from './MahjongIcon'
+import { MineIcon } from './MineIcon'
 
 const GAMES = [
   {
@@ -6,7 +7,14 @@ const GAMES = [
     href: 'https://mario1842.github.io/winnable-mahjong/',
     title: 'Winnable Mahjong',
     label: 'Mahjong',
-    icon: <MahjongIcon className="mahjong-icon" />,
+    icon: <MahjongIcon className="game-icon" />,
+  },
+  {
+    id: 'minesweeper',
+    href: 'https://mario1842.github.io/winnable-minesweeper/',
+    title: 'Winnable Minesweeper',
+    label: 'Minesweeper',
+    icon: <MineIcon className="game-icon" />,
   },
 ] as const
 

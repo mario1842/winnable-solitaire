@@ -1,6 +1,7 @@
 import type { DrawMode } from '../engine/cards'
 import { ContrastToggle } from './ContrastToggle'
 import { SisterGames } from './SisterGames'
+import { SolitaireIcon } from './SolitaireIcon'
 
 interface MenuProps {
   onStart: (drawMode: DrawMode) => void
@@ -12,6 +13,7 @@ export function Menu({ onStart, highContrast, onToggleContrast }: MenuProps) {
   return (
     <div className="menu">
       <div className="brand">
+        <SolitaireIcon className="brand-mark" />
         <h1>
           Winnable
           <span>Solitaire</span>
