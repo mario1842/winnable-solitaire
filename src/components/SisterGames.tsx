@@ -1,3 +1,4 @@
+import { FlowIcon } from './FlowIcon'
 import { MahjongIcon } from './MahjongIcon'
 import { MineIcon } from './MineIcon'
 
@@ -6,15 +7,19 @@ const GAMES = [
     id: 'mahjong',
     href: 'https://mario1842.github.io/winnable-mahjong/',
     title: 'Winnable Mahjong',
-    label: 'Mahjong',
     icon: <MahjongIcon className="game-icon" />,
   },
   {
     id: 'minesweeper',
     href: 'https://mario1842.github.io/winnable-minesweeper/',
     title: 'Winnable Minesweeper',
-    label: 'Minesweeper',
     icon: <MineIcon className="game-icon" />,
+  },
+  {
+    id: 'flow',
+    href: 'https://mario1842.github.io/flow-of-the-elements/',
+    title: 'Flow of the Elements',
+    icon: <FlowIcon className="game-icon" />,
   },
 ] as const
 
@@ -27,7 +32,7 @@ export function SisterGames({ variant = 'menu' }: SisterGamesProps) {
   return (
     <nav
       className={`sister-games sister-games-${variant}`}
-      aria-label="Other Winnable games"
+      aria-label="Other games"
     >
       {GAMES.map((game) => (
         <a
@@ -40,7 +45,7 @@ export function SisterGames({ variant = 'menu' }: SisterGamesProps) {
           {game.icon}
           {variant === 'menu' ? (
             <span>
-              Also play <strong>Winnable {game.label}</strong>
+              Also play <strong>{game.title}</strong>
             </span>
           ) : null}
         </a>
